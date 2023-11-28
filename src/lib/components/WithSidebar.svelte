@@ -5,6 +5,8 @@
     let connectors: string[] = [];
 
     getConnectors().then(c => connectors = c)
+
+    $: console.log(connectors)
 </script>
 <div class="flex-1 flex text-gray-300 overflow-hidden">
     <div class="m-4 mr-0 w-60 flex flex-col">

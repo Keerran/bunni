@@ -15,9 +15,7 @@ fn get_connectors(connectors: tauri::State<Connectors>) -> Vec<String> {
 
 fn main() {
     #[cfg(debug_assertions)]
-    ts::export(collect_types![
-        get_connectors,
-    ], "../src/lib/backend.ts").unwrap();
+    ts::export(collect_types![get_connectors,], "../src/lib/backend.ts").unwrap();
 
     tauri::Builder::default()
         .manage(Connectors::new())

@@ -4,6 +4,10 @@ use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
 use specta::Type;
 
+use self::mangadex::MangaDex;
+
+mod mangadex;
+
 #[derive(Serialize, Deserialize, Type)]
 pub struct SearchItem {
     pub id: String,
@@ -50,7 +54,10 @@ pub struct Connectors(pub Vec<Box<dyn Connector>>);
 
 impl Connectors {
     pub fn new() -> Self {
-        Self(vec![])
+        let client = reqwest::Client::new();
+        Self(vec![
+            Box::new(MangaDex::new(client))
+        ])
     }
 }
 
