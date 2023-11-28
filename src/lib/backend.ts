@@ -14,4 +14,8 @@ export function getConnectors() {
     return invoke()<string[]>("get_connectors")
 }
 
+export function searchManga(idx: number, query: string) {
+    return invoke()<SearchItem[]>("search_manga", { idx,query })
+}
 
+export type SearchItem = { id: string; title: string; description: string; cover_url: string }
