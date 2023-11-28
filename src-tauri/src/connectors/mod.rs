@@ -61,11 +61,11 @@ impl Connectors {
     }
 }
 
-impl Index<usize> for Connectors {
+impl Index<u32> for Connectors {
     type Output = Box<dyn Connector>;
 
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.0[index]
+    fn index(&self, index: u32) -> &Self::Output {
+        &self.0[index as usize]
     }
 }
 
