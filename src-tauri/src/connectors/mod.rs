@@ -54,7 +54,10 @@ pub struct Connectors(pub Vec<Box<dyn Connector>>);
 
 impl Connectors {
     pub fn new() -> Self {
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .user_agent("Bunni/0.0.1")
+            .build()
+            .expect("failed to build HTTP client");
         Self(vec![
             Box::new(MangaDex::new(client))
         ])
