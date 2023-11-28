@@ -23,20 +23,36 @@ async fn search_manga(
     idx: u32,
     query: &str,
 ) -> Result<Vec<SearchItem>, String> {
-    connectors[idx].search(query).await.map_err(|e| e.to_string())
+    connectors[idx]
+        .search(query)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn fetch_manga(
+    connectors: State<'_, Connectors>,
+    idx: u32,
+    id: &str,
+) -> Result<connectors::Manga, String> {
+    connectors[idx]
+        .fetch_manga(id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![get_connectors, search_manga],
+        collect_types![get_connectors, search_manga, fetch_manga],
         "../src/lib/backend.ts",
     )
     .unwrap();
 
     tauri::Builder::default()
         .manage(Connectors::new())
-        .invoke_handler(tauri::generate_handler![get_connectors, search_manga])
+        .invoke_handler(tauri::generate_handler![get_connectors, search_manga, fetch_manga])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

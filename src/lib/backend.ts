@@ -18,4 +18,10 @@ export function searchManga(idx: number, query: string) {
     return invoke()<SearchItem[]>("search_manga", { idx,query })
 }
 
+export function fetchManga(idx: number, id: string) {
+    return invoke()<Manga>("fetch_manga", { idx,id })
+}
+
+export type Chapter = { id: string; name: string; number: number }
 export type SearchItem = { id: string; title: string; description: string; cover_url: string }
+export type Manga = { desc: SearchItem; chapters: Chapter[] }
