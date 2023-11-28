@@ -10,3 +10,23 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+@layer components {
+    .scrollbar::-webkit-scrollbar {
+        @apply mb-2
+    }
+
+    .scrollbar::-webkit-scrollbar-track,
+    .scrollbar::-webkit-scrollbar-thumb {
+        @apply border-solid border-transparent border-4 bg-clip-padding rounded-3xl
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        @apply bg-black bg-opacity-10
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-main-dark
+    }
+
+}
