@@ -21,6 +21,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(Connectors::new())
+        .invoke_handler(tauri::generate_handler![get_connectors])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
