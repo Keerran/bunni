@@ -10,7 +10,7 @@ mod connectors;
 #[tauri::command]
 #[specta::specta]
 fn get_connectors(connectors: tauri::State<Connectors>) -> Vec<String> {
-    connectors.0.iter().map(|c| c.name()).collect()
+    connectors.0.iter().map(|c| c.name().to_string()).collect()
 }
 
 fn main() {

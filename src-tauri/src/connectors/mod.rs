@@ -39,8 +39,8 @@ pub struct ChapterImages {
 
 #[async_trait]
 pub trait Connector: Send + Sync {
-    fn name(&self) -> String;
-    fn url(&self) -> String;
+    fn name(&self) -> &str;
+    fn url(&self) -> &str;
     async fn search(&self, query: &str) -> Result<Vec<SearchItem>, reqwest::Error>;
     async fn fetch_manga(&self, id: &str) -> Result<Manga, reqwest::Error>;
     async fn fetch_chapter(&self, id: &str) -> Result<ChapterImages, reqwest::Error>;
