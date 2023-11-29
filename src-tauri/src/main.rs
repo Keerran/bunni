@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use connectors::Connectors;
+use connectors::{ChapterImages, Connectors, Manga};
 use specta::collect_types;
 use tauri::State;
 use tauri_specta::ts;
@@ -35,9 +35,22 @@ async fn fetch_manga(
     connectors: State<'_, Connectors>,
     idx: u32,
     id: &str,
-) -> Result<connectors::Manga, String> {
+) -> Result<Manga, String> {
     connectors[idx]
         .fetch_manga(id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn fetch_chapter(
+    connectors: State<'_, Connectors>,
+    idx: u32,
+    id: &str,
+) -> Result<ChapterImages, String> {
+    connectors[idx]
+        .fetch_chapter(id)
         .await
         .map_err(|e| e.to_string())
 }
@@ -45,14 +58,19 @@ async fn fetch_manga(
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![get_connectors, search_manga, fetch_manga],
+        collect_types![get_connectors, search_manga, fetch_manga, fetch_chapter],
         "../src/lib/backend.ts",
     )
     .unwrap();
 
     tauri::Builder::default()
         .manage(Connectors::new())
-        .invoke_handler(tauri::generate_handler![get_connectors, search_manga, fetch_manga])
+        .invoke_handler(tauri::generate_handler![
+            get_connectors,
+            search_manga,
+            fetch_manga,
+            fetch_chapter,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
