@@ -4,6 +4,7 @@
     import Icon from "$lib/components/Icon.svelte";
     import WithSidebar from "$lib/components/WithSidebar.svelte";
     import * as commands from "$lib/backend";
+	import { WebviewWindow } from "@tauri-apps/api/window";
 
     let {connectorIdx, mangaId} = $page.params;
 
@@ -13,6 +14,14 @@
 
     async function like() {
         // isLiked = await commands.likeManga(+connectorIdx, mangaId);
+    }
+
+    async function openChapter(chapterId: string) {
+        const href = `/connector/${connectorIdx}/${mangaId}/${chapterId}`;
+        new WebviewWindow(href, {
+            url: href,
+            decorations: false,
+        })
     }
 </script>
 <WithSidebar>
@@ -46,11 +55,11 @@
                 <ul class="w-full bg-main mt-4 rounded-md shadow-inner overflow-hidden">
                     {#each manga.chapters as chapter (chapter.id)}
                         <li class="flex group">
-                            <a href={`/connector/${connectorIdx}/${mangaId}/${chapter.id}`}
+                            <button on:click={() => openChapter(chapter.id)}
                                class="w-full px-4 py-2 group-first:pt-3 group-last:pb-3
                                     hover:bg-main-dark transition-colors duration-150">
                                 {chapter.name}
-                            </a>
+                            </button>
                         </li>
                     {/each}
                 </ul>
