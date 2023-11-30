@@ -21,6 +21,7 @@
         new WebviewWindow(href, {
             url: href,
             decorations: false,
+            maximized: true,
         })
     }
 </script>
