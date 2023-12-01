@@ -4,9 +4,10 @@ use async_trait::async_trait;
 use serde::{Serialize, Deserialize};
 use specta::Type;
 
-use self::mangadex::MangaDex;
+use self::{mangadex::MangaDex, mangakakalot::MangaKakalot};
 
 mod mangadex;
+mod mangakakalot;
 
 #[derive(Serialize, Deserialize, Type)]
 pub struct SearchItem {
@@ -59,7 +60,8 @@ impl Connectors {
             .build()
             .expect("failed to build HTTP client");
         Self(vec![
-            Box::new(MangaDex::new(client))
+            Box::new(MangaDex::new(client.clone())),
+            Box::new(MangaKakalot::new(client.clone())),
         ])
     }
 }

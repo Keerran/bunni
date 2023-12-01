@@ -18,7 +18,8 @@
 
     async function openChapter(chapterId: string) {
         const href = `/connector/${connectorIdx}/${mangaId}/${chapterId}`;
-        new WebviewWindow(href, {
+        // TODO give proper window label
+        new WebviewWindow("chapter", {
             url: href,
             decorations: false,
             maximized: true,

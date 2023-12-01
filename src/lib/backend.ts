@@ -26,8 +26,8 @@ export function fetchChapter(idx: number, id: string) {
     return invoke()<ChapterImages>("fetch_chapter", { idx,id })
 }
 
-export type Chapter = { id: string; name: string; number: number }
-export type SearchItem = { id: string; title: string; description: string; cover_url: string }
-export type ChapterImages = { images: string[]; format: Format }
-export type Manga = { desc: SearchItem; chapters: Chapter[] }
 export type Format = "Normal" | "Long"
+export type SearchItem = { id: string; title: string; description: string; cover_url: string }
+export type Chapter = { id: string; name: string; number: number }
+export type Manga = { desc: SearchItem; chapters: Chapter[] }
+export type ChapterImages = { images: string[]; format: Format }
