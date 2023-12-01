@@ -10,10 +10,10 @@
 
     let manga = commands.fetchManga(+connectorIdx, mangaId);
     let isLiked = false;
-    // commands.isLiked(+connectorIdx, mangaId).then(val => isLiked = val);
+    commands.isLiked(+connectorIdx, mangaId).then(val => isLiked = val);
 
     async function like() {
-        // isLiked = await commands.likeManga(+connectorIdx, mangaId);
+        isLiked = await commands.toggleLiked(+connectorIdx, mangaId);
     }
 
     async function openChapter(chapterId: string) {
@@ -36,7 +36,7 @@
                         <div class="w-full flex rounded-b-md overflow-hidden">
                             <button on:click={like}
                                     class="h-12 transparent-button">
-                                <Icon class={isLiked ? "text-pink-500" : ""}>favorite</Icon>
+                                <Icon class={isLiked ? "liked" : ""}>favorite</Icon>
                             </button>
                             <button class="h-12 transparent-button">
                                 <Icon>track_changes</Icon>

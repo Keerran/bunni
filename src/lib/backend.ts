@@ -26,6 +26,18 @@ export function fetchChapter(idx: number, id: string) {
     return invoke()<ChapterImages>("fetch_chapter", { idx,id })
 }
 
+export function toggleLiked(connectorIdx: number, id: string) {
+    return invoke()<boolean>("toggle_liked", { connectorIdx,id })
+}
+
+export function isLiked(connectorIdx: number, mangaId: string) {
+    return invoke()<boolean>("is_liked", { connectorIdx,mangaId })
+}
+
+export function fetchLiked() {
+    return invoke()<([number, Manga])[]>("fetch_liked")
+}
+
 export type Format = "Normal" | "Long"
 export type SearchItem = { id: string; title: string; description: string; cover_url: string }
 export type Chapter = { id: string; name: string; number: number }

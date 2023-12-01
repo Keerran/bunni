@@ -3,13 +3,16 @@
 #![feature(async_closure)]
 
 use connectors::{ChapterImages, Connectors, Manga};
+use futures::future::join_all;
+use prefs::StoredManga;
 use specta::collect_types;
-use tauri::State;
+use tauri::{Manager, State};
 use tauri_specta::ts;
 
-use crate::connectors::SearchItem;
+use crate::{connectors::SearchItem, prefs::UserPrefs};
 
 mod connectors;
+mod prefs;
 
 #[tauri::command]
 #[specta::specta]
@@ -56,21 +59,99 @@ async fn fetch_chapter(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+#[specta::specta]
+async fn toggle_liked(
+    prefs: State<'_, UserPrefs>,
+    connector_idx: u32,
+    id: &str,
+) -> Result<bool, ()> {
+    let mut data = prefs.inner.lock().unwrap();
+    let item = StoredManga {
+        manga_id: id.to_string(),
+        connector_idx,
+    };
+
+    let is_liked = data.liked.contains(&item);
+    if is_liked {
+        data.liked.retain(|it| *it != item);
+    } else {
+        data.liked.push(item);
+    }
+
+    drop(data);
+    prefs.save().unwrap();
+
+    Ok(!is_liked)
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn is_liked(
+    prefs: State<'_, UserPrefs>,
+    connector_idx: u32,
+    manga_id: String,
+) -> Result<bool, ()> {
+    let data = prefs.inner.lock().unwrap();
+    let manga = StoredManga {
+        connector_idx,
+        manga_id,
+    };
+    Ok(data.liked.contains(&manga))
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn fetch_liked(
+    connectors: tauri::State<'_, Connectors>,
+    prefs: tauri::State<'_, UserPrefs>,
+) -> Result<Vec<(u32, Manga)>, ()> {
+    let data = prefs.inner.lock().unwrap().liked.clone();
+    Ok(join_all(data.iter().map(|saved| {
+        let connector = &connectors[saved.connector_idx];
+        connector.fetch_manga(&saved.manga_id)
+    }))
+    .await
+    .into_iter()
+    .enumerate()
+    .filter_map(|(i, r)| Some((data[i].connector_idx, r.ok()?)))
+    .collect())
+}
+
+
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![get_connectors, search_manga, fetch_manga, fetch_chapter],
+        collect_types![
+            get_connectors,
+            search_manga,
+            fetch_manga,
+            fetch_chapter,
+            toggle_liked,
+            is_liked,
+            fetch_liked,
+        ],
         "../src/lib/backend.ts",
     )
     .unwrap();
 
     tauri::Builder::default()
-        .manage(Connectors::new())
+        .setup(|app| {
+            let data_dir = app.path_resolver().app_data_dir().unwrap();
+            println!("data_dir={data_dir:?}");
+            let _handle = app.handle();
+            app.manage(UserPrefs::new(data_dir));
+            app.manage(Connectors::new());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_connectors,
             search_manga,
             fetch_manga,
             fetch_chapter,
+            toggle_liked,
+            is_liked,
+            fetch_liked,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
