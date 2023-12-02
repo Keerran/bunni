@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![feature(async_closure)]
 
-use connectors::{ChapterImages, Connectors, Manga};
+use connectors::{ChapterImages, Connectors, Format, Manga};
 use futures::future::join_all;
 use prefs::StoredManga;
 use specta::collect_types;
@@ -103,8 +103,8 @@ async fn is_liked(
 #[tauri::command]
 #[specta::specta]
 async fn fetch_liked(
-    connectors: tauri::State<'_, Connectors>,
-    prefs: tauri::State<'_, UserPrefs>,
+    connectors: State<'_, Connectors>,
+    prefs: State<'_, UserPrefs>,
 ) -> Result<Vec<(u32, Manga)>, ()> {
     let data = prefs.inner.lock().unwrap().liked.clone();
     Ok(join_all(data.iter().map(|saved| {
@@ -118,6 +118,40 @@ async fn fetch_liked(
     .collect())
 }
 
+#[tauri::command]
+#[specta::specta]
+fn set_manga_view(
+    prefs: State<'_, UserPrefs>,
+    connector_idx: u32,
+    manga_id: String,
+    long: bool,
+) -> Result<(), ()> {
+    let mut data = prefs.inner.lock().unwrap();
+
+    data.views.entry(connector_idx).or_default().insert(
+        manga_id,
+        match long {
+            true => Format::Long,
+            false => Format::Normal,
+        },
+    );
+
+    drop(data);
+    prefs.save().unwrap();
+
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
+fn get_manga_view(
+    prefs: State<'_, UserPrefs>,
+    connector_idx: u32,
+    manga_id: String,
+) -> Result<Option<Format>, ()> {
+    let data = prefs.inner.lock().unwrap();
+    Ok(data.views.get(&connector_idx).and_then(|c| c.get(&manga_id)).copied())
+}
 
 fn main() {
     #[cfg(debug_assertions)]
@@ -130,6 +164,8 @@ fn main() {
             toggle_liked,
             is_liked,
             fetch_liked,
+            set_manga_view,
+            get_manga_view,
         ],
         "../src/lib/backend.ts",
     )
@@ -152,6 +188,8 @@ fn main() {
             toggle_liked,
             is_liked,
             fetch_liked,
+            set_manga_view,
+            get_manga_view,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

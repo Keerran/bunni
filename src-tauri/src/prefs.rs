@@ -1,6 +1,8 @@
-use std::{sync::Mutex, path::PathBuf, fs::{File, create_dir_all}};
+use std::{sync::Mutex, path::PathBuf, fs::{File, create_dir_all}, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
+
+use crate::connectors::Format;
 
 pub struct UserPrefs {
     path: PathBuf,
@@ -33,7 +35,7 @@ impl UserPrefs {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Hash, Eq)]
 pub struct StoredManga {
     pub connector_idx: u32,
     pub manga_id: String
@@ -42,12 +44,14 @@ pub struct StoredManga {
 #[derive(Serialize, Deserialize)]
 pub struct PrefData {
     pub liked: Vec<StoredManga>,
+    pub views: HashMap<u32, HashMap<String, Format>>,
 }
 
 impl Default for PrefData {
     fn default() -> Self {
         PrefData {
             liked: Vec::new(),
+            views: HashMap::new(),
         }
     }
 }

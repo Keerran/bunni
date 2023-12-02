@@ -38,6 +38,14 @@ export function fetchLiked() {
     return invoke()<([number, Manga])[]>("fetch_liked")
 }
 
+export function setMangaView(connectorIdx: number, mangaId: string, long: boolean) {
+    return invoke()<null>("set_manga_view", { connectorIdx,mangaId,long })
+}
+
+export function getMangaView(connectorIdx: number, mangaId: string) {
+    return invoke()<Format | null>("get_manga_view", { connectorIdx,mangaId })
+}
+
 export type Format = "Normal" | "Long"
 export type SearchItem = { id: string; title: string; description: string; cover_url: string }
 export type Chapter = { id: string; name: string; number: number }

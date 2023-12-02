@@ -30,7 +30,7 @@ pub struct Manga {
     pub chapters: Vec<Chapter>,
 }
 
-#[derive(Serialize, Deserialize, Type)]
+#[derive(Serialize, Deserialize, Type, Clone, Copy)]
 pub enum Format {
     Normal,
     Long,
