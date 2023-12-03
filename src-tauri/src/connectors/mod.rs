@@ -22,6 +22,7 @@ pub struct Chapter {
     pub id: String,
     pub name: String,
     pub number: f32,
+    pub read: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Type)]

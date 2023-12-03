@@ -1,4 +1,4 @@
-use std::{sync::Mutex, path::PathBuf, fs::{File, create_dir_all}, collections::HashMap};
+use std::{sync::Mutex, path::PathBuf, fs::{File, create_dir_all}, collections::{HashMap, HashSet}};
 
 use serde::{Deserialize, Serialize};
 
@@ -45,6 +45,7 @@ pub struct StoredManga {
 pub struct PrefData {
     pub liked: Vec<StoredManga>,
     pub views: HashMap<u32, HashMap<String, Format>>,
+    pub read: HashMap<u32, HashSet<String>>
 }
 
 impl Default for PrefData {
@@ -52,6 +53,7 @@ impl Default for PrefData {
         PrefData {
             liked: Vec::new(),
             views: HashMap::new(),
+            read: HashMap::new(),
         }
     }
 }

@@ -127,6 +127,7 @@ impl From<ChapterData> for Chapter {
                 .chapter
                 .and_then(|c| c.parse().ok())
                 .unwrap_or(0f32),
+            read: None,
         }
     }
 }

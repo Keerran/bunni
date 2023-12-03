@@ -46,8 +46,12 @@ export function getMangaView(connectorIdx: number, mangaId: string) {
     return invoke()<Format | null>("get_manga_view", { connectorIdx,mangaId })
 }
 
-export type Format = "Normal" | "Long"
-export type SearchItem = { id: string; title: string; description: string; cover_url: string }
-export type Chapter = { id: string; name: string; number: number }
-export type Manga = { desc: SearchItem; chapters: Chapter[] }
+export function markChapterRead(connectorIdx: number, chapterId: string) {
+    return invoke()<null>("mark_chapter_read", { connectorIdx,chapterId })
+}
+
 export type ChapterImages = { images: string[]; format: Format }
+export type Manga = { desc: SearchItem; chapters: Chapter[] }
+export type SearchItem = { id: string; title: string; description: string; cover_url: string }
+export type Chapter = { id: string; name: string; number: number; read: boolean | null }
+export type Format = "Normal" | "Long"

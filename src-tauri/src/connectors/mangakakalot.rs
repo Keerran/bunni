@@ -1,7 +1,7 @@
 use super::{Chapter, ChapterImages, Connector, Format, Manga, SearchItem};
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
-use futures::{future::join_all, FutureExt};
+use futures::future::join_all;
 use reqwest::header::HeaderValue;
 use scraper::{Html, Selector};
 
@@ -173,6 +173,7 @@ impl Connector for MangaKakalot {
                         id: anch.attr("href").unwrap().replace("/", " "),
                         name: anch.text().collect(),
                         number: i as f32,
+                        read: None,
                     }
                 })
                 .collect(),

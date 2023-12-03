@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-	import { fetchChapter, getMangaView, setMangaView } from "$lib/backend";
+	import { fetchChapter, getMangaView, setMangaView, markChapterRead } from "$lib/backend";
     import Carousel from "$lib/components/Carousel.svelte";
     import LongStrip from "$lib/components/LongStrip.svelte";
     import BackButton from "$lib/components/BackButton.svelte";
@@ -24,13 +24,17 @@
         setMangaView(+connectorIdx, mangaId, isLong);
     }
 
+    function finishReading() {
+        markChapterRead(+connectorIdx, chapterId);
+    }
+
 </script>
 <div id="outer" class="relative bg-main-darker overflow-hidden h-screen w-screen flex">
     {#await chapter then chapter}
         {#if isLong}
-            <LongStrip {chapter} />
+            <LongStrip {chapter} on:finish={finishReading} />
         {:else}
-            <Carousel {chapter} />
+            <Carousel {chapter} on:finish={finishReading} />
         {/if}
     {/await}
         <BackButton class="mt-4 mr-4" clickHandler={() => appWindow.close()}/>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy, onMount } from "svelte";
+    import { createEventDispatcher, onDestroy, onMount } from "svelte";
     // @ts-expect-error svelte-zoom has no typings
     import Zoom from "svelte-zoom";
     import type { CoordDiff, Coords, SwipeEvent } from "$lib/types";
@@ -7,6 +7,8 @@
 	import type { ChapterImages } from "$lib/backend";
 
     export let chapter: ChapterImages;
+
+    const dispatch = createEventDispatcher();
 
     let duration = 250;
     let index = 0;
@@ -21,6 +23,10 @@
     onDestroy(() => {
         document.removeEventListener("keydown", handleKeys);
     });
+
+    $: if(index === chapter.images.length) {
+        dispatch("finish")
+    }
 
     function handleKeys(e: KeyboardEvent) {
         switch(e.key) {

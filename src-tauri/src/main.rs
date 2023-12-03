@@ -5,8 +5,9 @@
 use connectors::{ChapterImages, Connectors, Format, Manga};
 use futures::future::join_all;
 use prefs::StoredManga;
+use serde::Serialize;
 use specta::collect_types;
-use tauri::{Manager, State};
+use tauri::{Manager, State, AppHandle};
 use tauri_specta::ts;
 
 use crate::{connectors::SearchItem, prefs::UserPrefs};
@@ -36,13 +37,24 @@ async fn search_manga(
 #[tauri::command]
 #[specta::specta]
 async fn fetch_manga(
+    prefs: State<'_, UserPrefs>,
     connectors: State<'_, Connectors>,
     idx: u32,
     id: &str,
 ) -> Result<Manga, String> {
+    let read = {
+        let mut data = prefs.inner.lock().unwrap();
+        data.read.entry(idx).or_default().clone()
+    };
     connectors[idx]
         .fetch_manga(id)
         .await
+        .map(|mut manga| {
+            manga.chapters.iter_mut().for_each(|c| {
+                c.read = Some(read.contains(&c.id));
+            });
+            manga
+        })
         .map_err(|e| e.to_string())
 }
 
@@ -153,6 +165,32 @@ fn get_manga_view(
     Ok(data.views.get(&connector_idx).and_then(|c| c.get(&manga_id)).copied())
 }
 
+#[tauri::command]
+#[specta::specta]
+fn mark_chapter_read(
+    app: AppHandle,
+    prefs: State<'_, UserPrefs>,
+    connector_idx: u32,
+    chapter_id: String,
+) -> Result<(), ()> {
+    let mut data = prefs.inner.lock().unwrap();
+    data.read.entry(connector_idx).or_default().insert(chapter_id.clone());
+    drop(data);
+    prefs.save().unwrap();
+
+    app.emit_all("chapter_read", ReadEvent {
+        connector_idx, chapter_id
+    }).unwrap();
+
+    Ok(())
+}
+
+#[derive(Clone, Serialize)]
+struct ReadEvent {
+    connector_idx: u32,
+    chapter_id: String,
+}
+
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
@@ -166,6 +204,7 @@ fn main() {
             fetch_liked,
             set_manga_view,
             get_manga_view,
+            mark_chapter_read,
         ],
         "../src/lib/backend.ts",
     )
@@ -190,6 +229,7 @@ fn main() {
             fetch_liked,
             set_manga_view,
             get_manga_view,
+            mark_chapter_read,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -3,18 +3,36 @@
     import BackButton from "$lib/components/BackButton.svelte";
     import Icon from "$lib/components/Icon.svelte";
     import WithSidebar from "$lib/components/WithSidebar.svelte";
-    import * as commands from "$lib/backend";
+    import { fetchManga, isLiked, toggleLiked, type Chapter} from "$lib/backend";
 	import { WebviewWindow } from "@tauri-apps/api/window";
+    import { type Event, listen } from "@tauri-apps/api/event";
 
     let {connectorIdx, mangaId} = $page.params;
 
-    let manga = commands.fetchManga(+connectorIdx, mangaId);
-    let isLiked = false;
-    commands.isLiked(+connectorIdx, mangaId).then(val => isLiked = val);
+    let manga = fetchManga(+connectorIdx, mangaId);
+    let liked = false;
+    isLiked(+connectorIdx, mangaId).then(val => liked = val);
 
     async function like() {
-        isLiked = await commands.toggleLiked(+connectorIdx, mangaId);
+        liked = await toggleLiked(+connectorIdx, mangaId);
     }
+
+    interface ReadEvent {
+        connector_idx: number,
+        chapter_id: string,
+    }
+
+    listen("chapter_read", async ({ payload }: Event<ReadEvent>) => {
+        console.log(payload);
+        if(payload.connector_idx === +connectorIdx) {
+            const mangaData = await manga
+            const chapter = mangaData.chapters.find((c: Chapter) => c.id === payload.chapter_id);
+            if (chapter) {
+                chapter.read = true
+                manga = Promise.resolve(mangaData)
+            }
+        }
+    })
 
     async function openChapter(chapterId: string) {
         const href = `/connector/${connectorIdx}/${mangaId}/${chapterId}`;
@@ -36,7 +54,7 @@
                         <div class="w-full flex rounded-b-md overflow-hidden">
                             <button on:click={like}
                                     class="h-12 transparent-button">
-                                <Icon class={isLiked ? "liked" : ""}>favorite</Icon>
+                                <Icon class={liked ? "liked" : ""}>favorite</Icon>
                             </button>
                             <button class="h-12 transparent-button">
                                 <Icon>track_changes</Icon>
@@ -59,7 +77,8 @@
                         <li class="flex group">
                             <button on:click={() => openChapter(chapter.id)}
                                class="w-full px-4 py-2 group-first:pt-3 group-last:pb-3
-                                    hover:bg-main-dark transition-colors duration-150">
+                                    hover:bg-main-dark transition-colors duration-150"
+                               class:bg-main-darker={chapter.read}>
                                 {chapter.name}
                             </button>
                         </li>
